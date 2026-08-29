@@ -1,20 +1,7 @@
 // Quepa Canchas · orquestador
-// Reusa del prototipo original: ui.jsx, icons.jsx, screen-minegocio (+ modales y wizard),
-// data.jsx y data-minegocio.jsx. Todo lo demás es propio de esta versión.
+// Comparte con el prototipo original: icons.jsx, ui.jsx, styles.css y screen-login.jsx.
+// Todo lo demás es propio de esta versión.
 const { useState: _acS, useEffect: _acE, useMemo: _acM } = React;
-
-// El establecimiento que consume Mi Negocio heredado: la ficha "ellago" del
-// prototipo original, renombrada a Cancha El Bosque para esta demo.
-const ESTAB_EB = {
-  ...(typeof ESTABS !== "undefined" ? ESTABS.find((e) => e.id === "ellago") : {}),
-  name: EB_NEGOCIO.name,
-  city: EB_NEGOCIO.city,
-  address: EB_NEGOCIO.address,
-  short: EB_NEGOCIO.short,
-  plan: EB_NEGOCIO.plan,
-  whatsapp: EB_NEGOCIO.whatsapp,
-  descripcion: EB_NEGOCIO.descripcion,
-};
 
 const NAV = [
   { id: "hoy",       label: "Panel de control", icon: "grid" },

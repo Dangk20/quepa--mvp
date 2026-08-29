@@ -3,3 +3,30 @@
 Thumbs.db
 .vercel
 node_modules/
+
+# ── El prototipo original multi-vertical vive aquí en local, pero NO se publica.
+#    Este repositorio es solo Quepa Canchas.
+index.html
+LEEME.md
+src-b2b/app.jsx
+src-b2b/shell.jsx
+src-b2b/data.jsx
+src-b2b/data-minegocio.jsx
+src-b2b/screen-register.jsx
+src-b2b/screen-reservas.jsx
+src-b2b/screen-clientes.jsx
+src-b2b/screen-eventos.jsx
+src-b2b/screen-conexiones.jsx
+src-b2b/screen-impulsa.jsx
+src-b2b/screen-suscripcion.jsx
+src-b2b/screen-minegocio.jsx
+src-b2b/minegocio-modales.jsx
+src-b2b/minegocio-wizard.jsx
+src-b2b/lienzo-mesas.jsx
+src-b2b/lienzo-habitaciones.jsx
+src-b2b/lienzo-canchas.jsx
+src-b2b/lienzo-agenda.jsx
+src-b2b/drawer-reserva.jsx
+assets-b2b/hotel.jpg
+assets-b2b/restaurante.jpg
+assets-b2b/servicios.jpg
