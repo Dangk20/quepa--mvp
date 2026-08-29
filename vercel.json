@@ -1,0 +1,8 @@
+{
+  "routes": [
+    { "src": "/", "dest": "/index-canchas.html" },
+    { "src": "/canchas", "dest": "/index-canchas.html" },
+    { "src": "/completo", "dest": "/index.html" },
+    { "handle": "filesystem" }
+  ]
+}
