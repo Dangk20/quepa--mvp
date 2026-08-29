@@ -21,7 +21,8 @@ function NuevaReserva({ open, onClose, onGuardar, reservas, inicial }) {
       cancha: inicial?.cancha || null,
       fecha: inicial?.fecha ?? 0,
       hora: inicial?.hora ?? null,
-      duracion: 1, nombre: "", wa: "", valor: "",
+      duracion: (inicial?.cancha ? (ebCancha(inicial.cancha)?.duraciones || [1])[0] : 1),
+      nombre: "", wa: "", valor: "",
     });
   }, [open]);
 
@@ -106,7 +107,7 @@ function NuevaReserva({ open, onClose, onGuardar, reservas, inicial }) {
       ok: true,
       c: (
         <div className="q-opts c3">
-          {[1, 2, 3].map((n) => {
+          {(cancha?.duraciones || [1]).map((n) => {
             const cabe = Array.from({ length: n }).every((_, i) => !ocupadas.has(d.hora + i) && d.hora + i < (cancha?.hasta || 23));
             return (
               <button key={n} disabled={!cabe} className={`q-opt ${d.duracion === n ? "on" : ""}`}

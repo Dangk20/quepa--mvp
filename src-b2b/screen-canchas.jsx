@@ -17,7 +17,7 @@ function ScreenCanchas({ canchas, tipos, onGuardar, onArchivar, onActiva, onNuev
     setTipoNuevo(""); setCreandoTipo(false);
   };
 
-  const nueva = () => setEditando({ id: null, nombre: "", tipo: tipos[0] || "", precio: "", desde: 6, hasta: 23, activa: true });
+  const nueva = () => setEditando({ id: null, nombre: "", tipo: tipos[0] || "", precio: "", desde: 6, hasta: 23, duraciones: [1, 2], activa: true });
   const activas = canchas.filter((c) => c.activa).length;
 
   return (
@@ -54,6 +54,7 @@ function ScreenCanchas({ canchas, tipos, onGuardar, onArchivar, onActiva, onNuev
               </div>
             </div>
             <div className="q-note">De {ebFmtHora(c.desde)} a {ebFmtHora(c.hasta)}</div>
+            <div className="q-note">Se reserva por {(c.duraciones || []).map((h) => `${h}h`).join(" · ")}</div>
             <div className="pr">{fmtCOP(c.precio)} <small>la hora</small></div>
             <QSwitch on={c.activa} onChange={(v) => onActiva(c.id, v)}>
               {c.activa ? "Activa" : "Inactiva"}
@@ -86,7 +87,7 @@ function ScreenCanchas({ canchas, tipos, onGuardar, onArchivar, onActiva, onNuev
               </button>
             )}
             <button className="q-btn pri grow"
-                    disabled={!editando?.nombre?.trim() || !Number(editando?.precio) || !editando?.tipo}
+                    disabled={!editando?.nombre?.trim() || !Number(editando?.precio) || !editando?.tipo || !(editando?.duraciones || []).length}
                     onClick={() => { onGuardar({ ...editando, precio: Number(editando.precio) }); setEditando(null); }}>
               <Icon name="check" size={24} /> Guardar
             </button>
@@ -141,6 +142,34 @@ function ScreenCanchas({ canchas, tipos, onGuardar, onArchivar, onActiva, onNuev
                        value={editando.precio}
                        onChange={(e) => setEditando({ ...editando, precio: e.target.value.replace(/\D/g, "") })} />
               </div>
+            </div>
+
+            <div className="q-field">
+              <label>¿Cuánto puede durar una reserva?</label>
+              <span className="q-campo-hint" style={{ marginTop: -4 }}>
+                Es lo que el cliente va a poder elegir al reservar esta cancha.
+              </span>
+              <div className="q-chips">
+                {EB_DURACIONES.map((h) => {
+                  const on = (editando.duraciones || []).includes(h);
+                  return (
+                    <button key={h} className={`q-chip ${on ? "on" : ""}`}
+                            onClick={() => setEditando({
+                              ...editando,
+                              duraciones: on
+                                ? editando.duraciones.filter((x) => x !== h)
+                                : [...(editando.duraciones || []), h].sort((a, b) => a - b),
+                            })}>
+                      {h} {h === 1 ? "hora" : "horas"}
+                    </button>
+                  );
+                })}
+              </div>
+              {(editando.duraciones || []).length === 0 && (
+                <span className="q-campo-hint" style={{ color: "#B4342F" }}>
+                  Elige al menos una: sin esto nadie puede reservar la cancha.
+                </span>
+              )}
             </div>
 
             <div className="q-field">

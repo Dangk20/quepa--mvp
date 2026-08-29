@@ -21,13 +21,15 @@ const EB_APERTURA = 6;   // 6:00 am
 const EB_CIERRE = 23;    // 11:00 pm
 
 const EB_CANCHAS = [
-  { id: "c1", code: "C1", nombre: "Cancha 1", tipo: "Fútbol 5",   precio: 70000,  desde: 6, hasta: 23, activa: true },
-  { id: "c2", code: "C2", nombre: "Cancha 2", tipo: "Fútbol 5",   precio: 70000,  desde: 6, hasta: 23, activa: true },
-  { id: "c3", code: "C3", nombre: "Cancha 3", tipo: "Fútbol 7",   precio: 110000, desde: 8, hasta: 23, activa: true },
-  { id: "c4", code: "C4", nombre: "Cancha 4", tipo: "Fútbol 7",   precio: 110000, desde: 8, hasta: 23, activa: true },
-  { id: "c5", code: "C5", nombre: "Cancha 5", tipo: "Pádel",      precio: 60000,  desde: 6, hasta: 22, activa: true },
-  { id: "c6", code: "C6", nombre: "Cancha 6", tipo: "Voleiplaya", precio: 55000,  desde: 8, hasta: 22, activa: true },
+  { id: "c1", code: "C1", nombre: "Cancha 1", tipo: "Fútbol 5",   precio: 70000,  desde: 6, hasta: 23, duraciones: [1, 2, 3], activa: true },
+  { id: "c2", code: "C2", nombre: "Cancha 2", tipo: "Fútbol 5",   precio: 70000,  desde: 6, hasta: 23, duraciones: [1, 2, 3], activa: true },
+  { id: "c3", code: "C3", nombre: "Cancha 3", tipo: "Fútbol 7",   precio: 110000, desde: 8, hasta: 23, duraciones: [2, 3], activa: true },
+  { id: "c4", code: "C4", nombre: "Cancha 4", tipo: "Fútbol 7",   precio: 110000, desde: 8, hasta: 23, duraciones: [2, 3], activa: true },
+  { id: "c5", code: "C5", nombre: "Cancha 5", tipo: "Pádel",      precio: 60000,  desde: 6, hasta: 22, duraciones: [1, 2], activa: true },
+  { id: "c6", code: "C6", nombre: "Cancha 6", tipo: "Voleiplaya", precio: 55000,  desde: 8, hasta: 22, duraciones: [1, 2, 3, 4], activa: true },
 ];
+
+const EB_DURACIONES = [1, 2, 3, 4];
 
 const EB_TIPOS = ["Fútbol 5", "Fútbol 7", "Pádel", "Voleiplaya"];
 
@@ -214,7 +216,7 @@ const ebFechaCorta = (delta) => {
 Object.assign(window, {
   EB_NEGOCIO, EB_CANCHAS, EB_TIPOS, EB_CLIENTES, EB_RESERVAS, EB_CIERRES,
   EB_USUARIOS, EB_PERFIL, EB_APERTURA, EB_CIERRE,
-  EB_CATEGORIAS, EB_ZONAS, EB_REDES, EB_DIAS, EB_RANGOS,
+  EB_CATEGORIAS, EB_ZONAS, EB_REDES, EB_DIAS, EB_RANGOS, EB_DURACIONES,
   ebCliente, ebCancha, ebHoras, ebFmtHora, ebFmtHoraCorta,
   ebFecha, ebFechaLarga, ebFechaCorta,
 });
