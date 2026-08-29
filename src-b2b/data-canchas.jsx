@@ -119,8 +119,8 @@ const EB_CIERRES = [
 ];
 
 const EB_USUARIOS = [
-  { id: "u1", nombre: "Daniel Peña",     wa: "+57 318 226 4530", rol: "Administrador",     activo: true },
-  { id: "u2", nombre: "Marcela Guzmán",  wa: "+57 312 447 9981", rol: "Recepción", activo: true },
+  { id: "u1", nombre: "Daniel Peña",    correo: "daniel@canchaelbosque.co",  wa: "+57 318 226 4530", rol: "Administrador", activo: true },
+  { id: "u2", nombre: "Marcela Guzmán", correo: "marcela@canchaelbosque.co", wa: "+57 312 447 9981", rol: "Recepción",     activo: true },
 ];
 
 // Perfil del negocio · mismos campos que el editor de Lugares del console

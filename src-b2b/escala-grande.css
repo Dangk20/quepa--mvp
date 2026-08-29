@@ -940,3 +940,14 @@ textarea.q-input{ padding:18px 22px; min-height:150px; line-height:1.45; font-we
   .q-red{ grid-template-columns:1fr; }
   .q-rangos{ grid-template-columns:repeat(2,1fr); }
 }
+
+/* acciones en ícono (editar · archivar) */
+.q-acciones{ display:flex; gap:8px; flex:none; }
+.q-ib{
+  width:52px; height:52px; border-radius:13px; border:1.5px solid var(--line-2);
+  background:var(--white); color:var(--ink-50); cursor:pointer; display:grid; place-items:center;
+  transition:border-color .14s, color .14s, background .14s;
+}
+.q-ib:hover{ border-color:var(--night); color:var(--ink); background:var(--paper); }
+.q-ib.borrar:hover{ border-color:#B4342F; color:#B4342F; background:rgba(180,52,47,.06); }
+.q-ib:focus-visible{ outline:3px solid var(--night); outline-offset:2px; }

@@ -27,6 +27,11 @@ function ScreenCanchas({ canchas, tipos, onGuardar, onArchivar, onActiva, onNuev
           <h1 className="q-h1">Mis canchas</h1>
           <div className="q-sub">Lo que la gente puede reservar</div>
         </div>
+        {canchas.length < EB_NEGOCIO.limites.canchas && (
+          <button className="q-btn pri" onClick={nueva}>
+            <Icon name="plus" size={24} /> Crear cancha
+          </button>
+        )}
       </div>
 
       <div className="q-cards">
@@ -37,9 +42,16 @@ function ScreenCanchas({ canchas, tipos, onGuardar, onArchivar, onActiva, onNuev
                 <div className="nm">{c.nombre}</div>
                 <div className="tp">{c.tipo}</div>
               </div>
-              <button className="q-back" style={{ minHeight: 56, padding: "0 18px" }} onClick={() => setEditando({ ...c, precio: String(c.precio) })}>
-                <Icon name="edit" size={20} /> Editar
-              </button>
+              <div className="q-acciones">
+                <button className="q-ib" title="Editar" aria-label={`Editar ${c.nombre}`}
+                        onClick={() => setEditando({ ...c, precio: String(c.precio) })}>
+                  <Icon name="edit" size={22} />
+                </button>
+                <button className="q-ib borrar" title="Archivar" aria-label={`Archivar ${c.nombre}`}
+                        onClick={() => setConfirmar(c)}>
+                  <Icon name="trash" size={22} />
+                </button>
+              </div>
             </div>
             <div className="q-note">De {ebFmtHora(c.desde)} a {ebFmtHora(c.hasta)}</div>
             <div className="pr">{fmtCOP(c.precio)} <small>la hora</small></div>
@@ -181,7 +193,7 @@ const ROLES = [
 
 function ScreenUsuarios({ usuarios, onInvitar, onQuitar }) {
   const [invitando, setInvitando] = _mcS(false);
-  const [nuevo, setNuevo] = _mcS({ nombre: "", wa: "", rol: "Recepción" });
+  const [nuevo, setNuevo] = _mcS({ nombre: "", correo: "", wa: "", rol: "Recepción" });
 
   return (
     <div className="q-wrap">
@@ -199,7 +211,8 @@ function ScreenUsuarios({ usuarios, onInvitar, onQuitar }) {
               <Avatar name={u.nombre} size={62} tone={u.rol === "Administrador" ? "ink" : "yg"} />
               <div style={{ minWidth: 0 }}>
                 <div className="nm" style={{ fontSize: 22 }}>{u.nombre}</div>
-                <div className="q-mono q-muted" style={{ fontSize: 16, fontWeight: 600 }}>{u.wa}</div>
+                <div className="q-mono q-muted" style={{ fontSize: 15, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis" }}>{u.correo}</div>
+                <div className="q-mono q-muted" style={{ fontSize: 15, fontWeight: 600 }}>{u.wa}</div>
               </div>
             </div>
             <span className="q-chip on" style={{ alignSelf: "flex-start", minHeight: 52, pointerEvents: "none" }}>{u.rol}</span>
@@ -226,8 +239,9 @@ function ScreenUsuarios({ usuarios, onInvitar, onQuitar }) {
 
       <QSheet open={invitando} onClose={() => setInvitando(false)} titulo="Invitar a alguien"
               footer={
-                <button className="q-btn pri grow" disabled={!nuevo.nombre.trim() || nuevo.wa.replace(/\D/g, "").length < 10}
-                        onClick={() => { onInvitar(nuevo); setNuevo({ nombre: "", wa: "", rol: "Recepción" }); setInvitando(false); }}>
+                <button className="q-btn pri grow"
+                        disabled={!nuevo.nombre.trim() || !/^\S+@\S+\.\S+$/.test(nuevo.correo) || nuevo.wa.replace(/\D/g, "").length < 10}
+                        onClick={() => { onInvitar(nuevo); setNuevo({ nombre: "", correo: "", wa: "", rol: "Recepción" }); setInvitando(false); }}>
                   <Icon name="send" size={24} /> Mandarle la invitación
                 </button>
               }>
@@ -235,6 +249,12 @@ function ScreenUsuarios({ usuarios, onInvitar, onQuitar }) {
           <label htmlFor="us-nom">¿Cómo se llama?</label>
           <input id="us-nom" className="q-input" placeholder="Nombre y apellido" value={nuevo.nombre}
                  onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })} />
+        </div>
+        <div className="q-field">
+          <label htmlFor="us-mail">¿Cuál es su correo?</label>
+          <input id="us-mail" className="q-input" type="email" inputMode="email" placeholder="nombre@correo.com"
+                 value={nuevo.correo} onChange={(e) => setNuevo({ ...nuevo, correo: e.target.value })} />
+          <span className="q-campo-hint">Con este correo entra al panel.</span>
         </div>
         <div className="q-field">
           <label htmlFor="us-wa">¿Cuál es su WhatsApp?</label>

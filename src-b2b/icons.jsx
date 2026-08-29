@@ -33,6 +33,9 @@ const Icon = ({ name, size = 18, ...rest }) => {
       <svg {...props}><circle cx="12" cy="12" r="3"/><path d="M19 12a7.2 7.2 0 0 0-.1-1.2l2-1.6-2-3.4-2.4.9a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.5a7 7 0 0 0-2 1.2l-2.4-.9-2 3.4 2 1.6a7 7 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-.9a7 7 0 0 0 2 1.2L10 21h4l.5-2.5a7 7 0 0 0 2-1.2l2.4.9 2-3.4-2-1.6c.07-.4.1-.8.1-1.2z"/></svg>
     );
     case "plus": return (<svg {...props}><path d="M12 5v14M5 12h14"/></svg>);
+    case "trash": return (
+      <svg {...props}><path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+    );
     case "edit": return (<svg {...props}><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z"/></svg>);
     case "chevron-down": return (<svg {...props}><path d="M6 9l6 6 6-6"/></svg>);
     case "chevron-right": return (<svg {...props}><path d="M9 6l6 6-6 6"/></svg>);
