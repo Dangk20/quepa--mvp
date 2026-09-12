@@ -13,10 +13,15 @@ const NAV = [
   { id: "minegocio", label: "Mi negocio",       icon: "store" },
 ];
 
+// ---- enganche para el modo grabación (local, fuera del producto) ----
+// Si index-grabacion.html cargó src-b2b/demo-lluvia.jsx, existe window.QUEPA_DEMO y el app le cede
+// el arranque (vista, reservas iniciales y la "lluvia"). Sin ese archivo, esto es null y no pasa nada.
+const DEMO = window.QUEPA_DEMO || null;
+
 function AppCanchas() {
-  const [nav, setNav] = _acS("hoy");
+  const [nav, setNav] = _acS(DEMO ? DEMO.vistaInicial : "hoy");
   const [dia, setDia] = _acS(0);
-  const [reservas, setReservas] = _acS(EB_RESERVAS);
+  const [reservas, setReservas] = _acS(() => (DEMO ? DEMO.reservasIniciales(EB_RESERVAS) : EB_RESERVAS));
   const [canchas, setCanchas] = _acS(EB_CANCHAS);
   const [usuarios, setUsuarios] = _acS(EB_USUARIOS);
   const [clientes, setClientes] = _acS(EB_CLIENTES);
@@ -28,7 +33,21 @@ function AppCanchas() {
   const [detalle, setDetalle] = _acS(null);    // reserva vista desde "Hoy"
   const [agenda, setAgenda] = _acS(null);      // cancha cuya agenda se está viendo
   const [undo, setUndo] = _acS(null);
-  const [aviso, setAviso] = _acS(null);
+  // avisos de "nueva reserva por Quepa": se apilan en el centro del header, máximo 3 a la vista;
+  // cuando llega la cuarta, la más vieja se va desvaneciendo
+  const [avisos, setAvisos] = _acS([]);
+  const setAviso = (nueva) => {
+    if (!nueva) return setAvisos([]);
+    setAvisos((prev) => {
+      const vivos = prev.filter((a) => !a.saliendo);
+      const lista = [nueva, ...vivos];
+      if (lista.length <= 3) return lista;
+      const sale = lista[3];
+      setTimeout(() => setAvisos((p) => p.filter((a) => a.id !== sale.id)), 380);
+      return [...lista.slice(0, 3), { ...sale, saliendo: true }];
+    });
+  };
+  const quitarAviso = (id) => setAvisos((p) => p.filter((a) => a.id !== id));
   const reloj = useAhora();
   const [menu, setMenu] = _acS(false);
   const [auth, setAuth] = _acS(true);
@@ -61,6 +80,7 @@ function AppCanchas() {
   };
 
   _acE(() => {
+    if (DEMO) return;
     const t = setTimeout(() => {
       const nueva = { id: "sim1", cancha: "c2", clienteId: "e13", hora: 16, duracion: 1, fecha: 0,
                       estado: "Confirmada", origen: "quepa", valor: 70000 };
@@ -71,8 +91,15 @@ function AppCanchas() {
     return () => clearTimeout(t);
   }, []);
 
+  // ---- modo grabación: la lluvia la maneja demo-lluvia.jsx ----
+  _acE(() => {
+    if (!DEMO) return;
+    return DEMO.iniciar({ setReservas, setAviso, marcarNueva });
+  }, []);
+
   const simRef = React.useRef(0);
   _acE(() => {
+    if (DEMO) return;
     const cada = setInterval(() => {
       if (simRef.current >= 24) return;
       setReservas((rs) => {
@@ -165,19 +192,24 @@ function AppCanchas() {
               </button>
             </div>
 
-            {aviso ? (
-              <div className="q-aviso" role="status">
-                <span className="pip" />
-                <span className="txt">
-                  <span className="l">Nueva reserva por Quepa</span>
-                  <span className="v">
-                    {(ebCliente(aviso.clienteId)?.nombre || "").split(" ")[0]} · {aviso.fecha === 0 ? "hoy" : aviso.fecha === 1 ? "mañana" : ebFechaCorta(aviso.fecha)} {ebFmtHora(aviso.hora)} · {ebCancha(aviso.cancha)?.nombre}
-                  </span>
-                </span>
-                <span className="acc">
-                  <button className="ver" onClick={() => { setDetalle(aviso); setAviso(null); }}>Ver</button>
-                  <button className="listo" onClick={() => setAviso(null)}>Listo</button>
-                </span>
+            {avisos.length > 0 ? (
+              <div className="q-avisos">
+                {avisos.map((aviso, i) => (
+                  <div className={`q-aviso ${aviso.saliendo ? "saliendo" : ""}`} role="status" key={aviso.id}
+                       style={i > 0 ? { top: `calc(100% + ${(i - 1) * 80 + 8}px)` } : undefined}>
+                    <span className="pip" />
+                    <span className="txt">
+                      <span className="l">Nueva reserva por Quepa</span>
+                      <span className="v">
+                        {(ebCliente(aviso.clienteId)?.nombre || "").split(" ")[0]} · {aviso.fecha === 0 ? "hoy" : aviso.fecha === 1 ? "mañana" : ebFechaCorta(aviso.fecha)} {ebFmtHora(aviso.hora)} · {ebCancha(aviso.cancha)?.nombre}
+                      </span>
+                    </span>
+                    <span className="acc">
+                      <button className="ver" onClick={() => { setDetalle(aviso); quitarAviso(aviso.id); }}>Ver</button>
+                      <button className="listo" onClick={() => quitarAviso(aviso.id)}>Listo</button>
+                    </span>
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="q-when">
@@ -236,14 +268,14 @@ function AppCanchas() {
       {/* ---------- pantallas ---------- */}
       {nav === "hoy" && (
         <ScreenHoy
-          reservas={reservas} onNav={setNav} onCrear={setCrear}
+          reservas={reservas} onNav={setNav} onCrear={setCrear} enVivo={!!DEMO}
           onVerReserva={setDetalle} onVerCancha={setAgenda} diaAbierto={diaAbierto}
         />
       )}
 
       {nav === "reservas" && (
         <ScreenReservas
-          reservas={reservas} canchas={canchas} perfil={perfil} nuevas={nuevas}
+          reservas={reservas} canchas={canchas} perfil={perfil} nuevas={nuevas} contarTodo={!!DEMO}
           onCrear={setCrear} onVerReserva={setDetalle}
         />
       )}
@@ -299,6 +331,7 @@ function AppCanchas() {
       />
 
       {undo && <QUndo texto={undo.texto} onUndo={() => { undo.restaurar(); setUndo(null); }} onExpire={() => setUndo(null)} />}
+
     </div>
   );
 }

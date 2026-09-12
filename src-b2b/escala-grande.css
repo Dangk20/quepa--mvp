@@ -482,6 +482,8 @@ textarea.q-input{ padding:18px 22px; min-height:150px; line-height:1.45; font-we
 .q-panel .q-next::-webkit-scrollbar{ width:8px; }
 .q-panel .q-next::-webkit-scrollbar-track{ background:transparent; }
 .q-panel .q-next::-webkit-scrollbar-thumb{ background:var(--line-2); border-radius:99px; border:2px solid var(--white); }
+.q-panel-big.late{ animation:qbig .5s cubic-bezier(.2,.9,.3,1.3); transform-origin:left center; }
+@keyframes qbig{ 0%{ transform:scale(1.12); color:#8FA82B; } 100%{ transform:none; } }
 .q-panel-big{
   font-family:'JetBrains Mono',monospace; font-weight:700; font-size:clamp(64px,8vw,116px);
   line-height:.88; letter-spacing:-.055em; font-variant-numeric:tabular-nums; margin:2px 0 10px;
@@ -739,6 +741,13 @@ textarea.q-input{ padding:18px 22px; min-height:150px; line-height:1.45; font-we
 }
 
 /* ---------- aviso de reserva nueva, dentro del header ---------- */
+/* pila de avisos: el primero va en el flujo (ocupa el lugar del reloj); los siguientes
+   cuelgan debajo, encima de las pestañas, sin mover nada */
+.q-avisos{ position:relative; flex:none; z-index:45; }
+.q-avisos .q-aviso + .q-aviso{ position:absolute; left:0; right:0; }
+.q-avisos .q-aviso{ min-width:480px; }
+.q-aviso.saliendo{ animation:qaviso-out .38s ease-in forwards; }
+@keyframes qaviso-out{ to{ opacity:0; transform:translateY(10px) scale(.97); } }
 .q-aviso{
   flex:none; display:flex; align-items:center; gap:18px;
   background:var(--night); border-radius:16px; padding:12px 12px 12px 22px;
@@ -751,7 +760,7 @@ textarea.q-input{ padding:18px 22px; min-height:150px; line-height:1.45; font-we
   font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.13em;
   text-transform:uppercase; color:var(--yg); font-weight:700;
 }
-.q-aviso .v{ font-size:19px; font-weight:800; letter-spacing:-.02em; color:var(--white); white-space:nowrap; }
+.q-aviso .v{ font-size:19px; font-weight:800; letter-spacing:-.02em; color:var(--white); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .q-aviso .acc{ display:flex; gap:10px; flex:none; }
 .q-aviso .acc button{
   min-height:48px; padding:0 22px; border-radius:12px; border:0; cursor:pointer;

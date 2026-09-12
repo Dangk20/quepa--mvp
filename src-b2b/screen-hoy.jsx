@@ -110,12 +110,30 @@ function TarjetaCancha({ cancha, slot, onCerrar, onReservar, onVer }) {
 }
 
 // ---------- Pantalla ----------
-function ScreenHoy({ reservas, onNav, onCrear, onVerReserva, onVerCancha, diaAbierto }) {
+function ScreenHoy({ reservas, onNav, onCrear, onVerReserva, onVerCancha, diaAbierto, enVivo }) {
   const ahora = new Date().getHours();
-  const slots = useSlotsDemo();
+  const slotsDemo = useSlotsDemo();
   const [cerrados, setCerrados] = _hyS({});
 
+  // enVivo (modo grabación): las tarjetas salen de las reservas reales de hoy —
+  // la que está en juego ahora mismo o, si no hay, la próxima que viene
+  const slotsReales = _hyM(() => {
+    const n = new Date();
+    const nowMin = n.getHours() * 60 + n.getMinutes();
+    const m = {};
+    EB_CANCHAS.forEach((c) => {
+      const rs = reservas.filter((r) => r.cancha === c.id && r.fecha === 0 && r.estado !== "Cancelada").sort((a, b) => a.hora - b.hora);
+      const r = rs.find((x) => x.hora * 60 <= nowMin && nowMin < (x.hora + x.duracion) * 60) || rs.find((x) => x.hora * 60 > nowMin);
+      m[c.id] = r ? { inicio: r.hora * 60, duracion: r.duracion * 60, clienteId: r.clienteId, valor: r.valor, origen: r.origen } : null;
+    });
+    return m;
+  }, [reservas]);
+  const slots = enVivo ? slotsReales : slotsDemo;
+
   const hoy = _hyM(() => reservas.filter((r) => r.fecha === 0 && r.estado !== "Cancelada"), [reservas]);
+  // enVivo: el número grande suma TODO lo que va cayendo (hoy y los días que siguen), para que llegue a 100
+  const caidas = _hyM(() => (enVivo ? reservas.filter((r) => r.fecha >= 0 && r.estado !== "Cancelada").length : hoy.length), [reservas, hoy, enVivo]);
+  const boom = enVivo && caidas >= 100;
   const proximas = _hyM(
     () => hoy.filter((r) => r.hora >= ahora && r.estado === "Confirmada").sort((a, b) => a.hora - b.hora),
     [hoy]
@@ -123,7 +141,7 @@ function ScreenHoy({ reservas, onNav, onCrear, onVerReserva, onVerCancha, diaAbi
 
   return (
     <div className="q-wrap fit">
-      <div className="q-home">
+      <div className={`q-home ${boom ? "reventar" : ""}`}>
         {/* ---------- izquierda: acción + reservas de hoy ---------- */}
         <div className="q-col">
           <button className="q-btn pri lg" style={{ width: "100%" }} onClick={() => onCrear({ fecha: 0 })}>
@@ -134,7 +152,7 @@ function ScreenHoy({ reservas, onNav, onCrear, onVerReserva, onVerCancha, diaAbi
             <div className="q-panel-top">
               <div>
                 <span className="q-tile-lbl">Reservas de hoy</span>
-                <div className="q-panel-big">{hoy.length}</div>
+                <div className={`q-panel-big ${enVivo ? "late" : ""} ${enVivo && caidas >= 80 ? "casi" : ""} ${boom ? "boom" : ""}`} key={caidas}>{caidas}</div>
               </div>
               <span className="q-panel-hoy">Hoy</span>
             </div>

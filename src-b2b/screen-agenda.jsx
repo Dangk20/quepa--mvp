@@ -73,8 +73,9 @@ function VistaDia({ fecha, reservas, canchas, perfil, nuevas, reloj, onCrear, on
   // al entrar, llevar el scroll a la hora actual (una columna antes)
   _rsE(() => {
     if (!ref.current) return;
+    // hoy: la hora actual queda pegada a la izquierda, así lo que viene cabe completo a la derecha
     const h = esHoy ? new Date().getHours() : (franja ? Math.max(franja.desde, 15) : 15);
-    ref.current.scrollLeft = Math.max(0, (h - desde - 1) * RS_COL);
+    ref.current.scrollLeft = Math.max(0, (h - desde) * RS_COL - (esHoy ? 24 : RS_COL));
   }, [dif, desde]);
 
   const ancho = RS_LBL + horas.length * RS_COL;
@@ -289,7 +290,7 @@ function DiaSheet({ fecha, reservas, perfil, onClose, onVer, onCrear, onVerDia }
 }
 
 // ---------- pantalla ----------
-function ScreenReservas({ reservas, canchas, perfil, nuevas, onCrear, onVerReserva }) {
+function ScreenReservas({ reservas, canchas, perfil, nuevas, onCrear, onVerReserva, contarTodo }) {
   const [vista, setVista] = _rsS("dia");
   const [ancla, setAncla] = _rsS(() => rsMedianoche(new Date()));
   const [diaAbierto, setDiaAbierto] = _rsS(null);   // Date del día abierto desde el mes
@@ -314,10 +315,14 @@ function ScreenReservas({ reservas, canchas, perfil, nuevas, onCrear, onVerReser
   const activas = _rsM(() => reservas.filter((r) => r.estado !== "Cancelada"), [reservas]);
 
   // contador del día a la vista: cuántas hay y cuántas entraron solas
-  const delDia = _rsM(() => activas.filter((r) => r.fecha === difAncla), [activas, difAncla]);
+  // contarTodo (modo grabación): suma todo lo que ha ido cayendo desde hoy en adelante, no solo el día a la vista
+  const delDia = _rsM(() => activas.filter((r) => (contarTodo ? r.fecha >= 0 : r.fecha === difAncla)), [activas, difAncla, contarTodo]);
   const solas = delDia.filter((r) => r.origen === "quepa").length;
   const [latido, setLatido] = _rsS(0);
   _rsE(() => { if (nuevas.size) setLatido((n) => n + 1); }, [nuevas]);
+  // modo grabación: de 80 tiembla, en 100 revienta
+  const casi = contarTodo && delDia.length >= 80;
+  const boom = contarTodo && delDia.length >= 100;
 
   // la agenda ocupa exactamente lo que queda de pantalla debajo de la barra superior
   const [alto, setAlto] = _rsS(null);
@@ -332,7 +337,7 @@ function ScreenReservas({ reservas, canchas, perfil, nuevas, onCrear, onVerReser
   }, []);
 
   return (
-    <div className="q-wrap fit q-cal-wrap" style={alto ? { height: alto } : undefined}>
+    <div className={`q-wrap fit q-cal-wrap ${boom ? "reventar" : ""}`} style={alto ? { height: alto } : undefined}>
       {/* barra: hoy · navegación · título · vista · nueva */}
       <div className="q-cal-bar">
         <button className={`q-btn ${esHoy ? "on" : ""}`} onClick={() => setAncla(rsMedianoche(new Date()))}>Hoy</button>
@@ -350,7 +355,7 @@ function ScreenReservas({ reservas, canchas, perfil, nuevas, onCrear, onVerReser
           <button role="tab" aria-selected={vista === "mes"} className={vista === "mes" ? "on" : ""} onClick={() => setVista("mes")}>Mes</button>
         </div>
         {vista === "dia" && (
-          <div className={`q-cal-vivo ${latido ? "late" : ""}`} key={latido}>
+          <div className={`q-cal-vivo ${latido ? "late" : ""} ${casi ? "casi" : ""} ${boom ? "boom" : ""}`} key={boom ? "boom" : latido}>
             <span className="pip" />
             <span className="n">{delDia.length}</span>
             <span className="l">{delDia.length === 1 ? "reserva" : "reservas"}</span>

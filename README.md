@@ -29,6 +29,22 @@ python3 -m http.server 4202
 | **Ventas** | Caja del día, con apertura y cierre |
 | **Mi negocio** | Los mismos campos del editor de Lugares del console de Quepa |
 
+## Modo grabación (solo local)
+
+Para grabar "la magia": `index-grabacion.html` abre con la agenda de hoy vacía y, a los 5 s, empiezan a
+caer reservas por Quepa cada vez más rápido (100 en ~35 s), con el aviso apilado en la barra superior,
+la animación de cada barra y los contadores que tiemblan desde 80 y revientan en 100.
+
+Vive en tres archivos que **no se publican** (están en `.gitignore`): `index-grabacion.html`,
+`src-b2b/demo-lluvia.jsx` y `src-b2b/demo-lluvia.css`. El producto (`index-canchas.html`) no los carga;
+solo conserva un enganche inerte (`window.QUEPA_DEMO`).
+
+```
+http://localhost:4202/index-grabacion.html                      ← agenda (Reservas)
+http://localhost:4202/index-grabacion.html?vista=panel          ← Panel de control
+http://localhost:4202/index-grabacion.html?espera=10&total=200&ritmo=2
+```
+
 ## La página del cliente (`reservar.html`)
 
 Es el link que Quepa manda por WhatsApp cuando el cliente prefiere reservar "tocando" en vez de

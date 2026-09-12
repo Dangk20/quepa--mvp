@@ -30,3 +30,8 @@ src-b2b/drawer-reserva.jsx
 assets-b2b/hotel.jpg
 assets-b2b/restaurante.jpg
 assets-b2b/servicios.jpg
+
+# ── Modo grabación (lluvia de reservas). Solo local, para grabar video; el producto no lo carga.
+index-grabacion.html
+src-b2b/demo-lluvia.jsx
+src-b2b/demo-lluvia.css
