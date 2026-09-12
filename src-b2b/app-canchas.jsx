@@ -5,6 +5,7 @@ const { useState: _acS, useEffect: _acE, useMemo: _acM } = React;
 
 const NAV = [
   { id: "hoy",       label: "Panel de control", icon: "grid" },
+  { id: "reservas",  label: "Reservas",         icon: "calendar" },
   { id: "clientes",  label: "Clientes",         icon: "users" },
   { id: "canchas",   label: "Mis canchas",      icon: "court" },
   { id: "usuarios",  label: "Usuarios",         icon: "settings" },
@@ -49,15 +50,57 @@ function AppCanchas() {
   const _h12 = reloj.getHours() % 12 === 0 ? 12 : reloj.getHours() % 12;
   const horaAhora = `${_h12}:${String(reloj.getMinutes()).padStart(2, "0")} ${reloj.getHours() >= 12 ? "pm" : "am"}`;
 
-  // --- reserva nueva por Quepa, a los 6 segundos (realtime simulado) ---
+  // --- reservas que van entrando por Quepa (realtime simulado) ---
+  // La primera a los 6 segundos; después una cada ~20 s en una hora libre de los próximos 7 días,
+  // para que la agenda se vea llenándose sola. `nuevas` guarda las recién llegadas unos segundos
+  // para resaltarlas en el calendario.
+  const [nuevas, setNuevas] = _acS(() => new Set());
+  const marcarNueva = (id) => {
+    setNuevas((n) => new Set([...n, id]));
+    setTimeout(() => setNuevas((n) => { const m = new Set(n); m.delete(id); return m; }), 12000);
+  };
+
   _acE(() => {
     const t = setTimeout(() => {
       const nueva = { id: "sim1", cancha: "c2", clienteId: "e13", hora: 16, duracion: 1, fecha: 0,
                       estado: "Confirmada", origen: "quepa", valor: 70000 };
       setReservas((rs) => (rs.some((r) => r.id === "sim1") ? rs : [...rs, nueva]));
       setAviso(nueva);
+      marcarNueva("sim1");
     }, 6000);
     return () => clearTimeout(t);
+  }, []);
+
+  const simRef = React.useRef(0);
+  _acE(() => {
+    const cada = setInterval(() => {
+      if (simRef.current >= 24) return;
+      setReservas((rs) => {
+        const ahora = new Date().getHours();
+        // hasta 40 intentos de encontrar una hora libre: primero hoy (lo que se ve), después la semana
+        for (let i = 0; i < 40; i++) {
+          const fecha = i < 20 ? 0 : Math.floor(Math.random() * 7);
+          const hora = fecha === 0 && ahora >= 15 ? ahora + 1 + Math.floor(Math.random() * Math.max(1, 22 - ahora))
+                                                   : 15 + Math.floor(Math.random() * 8);   // 3 pm – 10 pm
+          if (fecha === 0 && hora <= ahora) continue;
+          if (hora >= 23) continue;
+          const cancha = EB_CANCHAS[Math.floor(Math.random() * EB_CANCHAS.length)];
+          if (!cancha.activa || hora < cancha.desde || hora >= cancha.hasta) continue;
+          const tomada = rs.some((r) => r.fecha === fecha && r.cancha === cancha.id && r.estado !== "Cancelada"
+                                        && r.hora <= hora && hora < r.hora + r.duracion);
+          if (tomada) continue;
+          const cliente = EB_CLIENTES[Math.floor(Math.random() * EB_CLIENTES.length)];
+          const nueva = { id: "sim" + (simRef.current + 2), cancha: cancha.id, clienteId: cliente.id, hora, duracion: 1,
+                          fecha, estado: "Confirmada", origen: "quepa", valor: cancha.precio };
+          simRef.current += 1;
+          setAviso(nueva);
+          marcarNueva(nueva.id);
+          return [...rs, nueva];
+        }
+        return rs;
+      });
+    }, 12000);
+    return () => clearInterval(cada);
   }, []);
 
   // --- acciones sobre reservas ---
@@ -128,7 +171,7 @@ function AppCanchas() {
                 <span className="txt">
                   <span className="l">Nueva reserva por Quepa</span>
                   <span className="v">
-                    {(ebCliente(aviso.clienteId)?.nombre || "").split(" ")[0]} · {ebFmtHora(aviso.hora)} · {ebCancha(aviso.cancha)?.nombre}
+                    {(ebCliente(aviso.clienteId)?.nombre || "").split(" ")[0]} · {aviso.fecha === 0 ? "hoy" : aviso.fecha === 1 ? "mañana" : ebFechaCorta(aviso.fecha)} {ebFmtHora(aviso.hora)} · {ebCancha(aviso.cancha)?.nombre}
                   </span>
                 </span>
                 <span className="acc">
@@ -195,6 +238,13 @@ function AppCanchas() {
         <ScreenHoy
           reservas={reservas} onNav={setNav} onCrear={setCrear}
           onVerReserva={setDetalle} onVerCancha={setAgenda} diaAbierto={diaAbierto}
+        />
+      )}
+
+      {nav === "reservas" && (
+        <ScreenReservas
+          reservas={reservas} canchas={canchas} perfil={perfil} nuevas={nuevas}
+          onCrear={setCrear} onVerReserva={setDetalle}
         />
       )}
 

@@ -213,6 +213,42 @@ const ebFechaCorta = (delta) => {
   return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
 };
 
+
+// ---- reservas sembradas alrededor de hoy ----
+// Tres semanas hacia atrás y cuatro hacia adelante, para que la agenda semanal y mensual
+// se vean pobladas. Determinista: la misma semilla da siempre la misma agenda.
+// Ayer, hoy y mañana se dejan como están arriba (los usan Ventas y el Panel de control).
+(function sembrarReservas() {
+  let s = 20260912;
+  const rnd = () => { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; };
+  const pick = (a) => a[Math.floor(rnd() * a.length)];
+  let n = 100;
+  for (let f = -21; f <= 28; f++) {
+    if (f >= -1 && f <= 1) continue;
+    const dow = ebFecha(f).getDay();            // 0 = domingo
+    const finde = dow === 0 || dow === 5 || dow === 6;
+    EB_CANCHAS.forEach((c) => {
+      const ocup = new Set();
+      for (let h = c.desde; h < c.hasta; h++) {
+        if (ocup.has(h)) continue;
+        let p = h >= 17 ? 0.62 : h >= 12 ? 0.22 : 0.10;
+        if (finde) p += h >= 17 ? 0.22 : 0.16;
+        if (f > 14) p *= 0.4; else if (f > 7) p *= 0.72;   // lo lejano todavía se está llenando
+        if (rnd() > p) continue;
+        const caben = c.duraciones.filter((d) => h + d <= c.hasta);
+        if (!caben.length) continue;
+        const dur = pick(caben);
+        for (let i = 0; i < dur; i++) ocup.add(h + i);
+        const estado = f < 0 ? (rnd() < 0.9 ? "Pagó" : "No llegó") : "Confirmada";
+        EB_RESERVAS.push({
+          id: "s" + (n++), cancha: c.id, clienteId: pick(EB_CLIENTES).id, hora: h, duracion: dur, fecha: f,
+          estado, origen: rnd() < 0.7 ? "quepa" : "manual", valor: c.precio * dur,
+        });
+      }
+    });
+  }
+})();
+
 Object.assign(window, {
   EB_NEGOCIO, EB_CANCHAS, EB_TIPOS, EB_CLIENTES, EB_RESERVAS, EB_CIERRES,
   EB_USUARIOS, EB_PERFIL, EB_APERTURA, EB_CIERRE,

@@ -9,12 +9,16 @@ function NuevaReserva({ open, onClose, onGuardar, reservas, inicial }) {
   const [editaPrecio, setEditaPrecio] = _nrS(false);
   const [d, setD] = _nrS({ cancha: null, fecha: 0, hora: null, duracion: 1, nombre: "", wa: "", valor: "" });
 
+  // Modo bloque: viene desde la agenda con día y hora ya elegidos, pero sin cancha.
+  // Se pregunta solo la cancha (entre las que están libres a esa hora) y sigue el flujo normal.
+  const modoBloque = !!(inicial && inicial.hora != null && !inicial.cancha);
+
   _nrE(() => {
     if (!open) return;
     // arranca en el primer paso que falta: si ya vienen cancha y hora, salta a la duración
     const yaCancha = !!(inicial && inicial.cancha);
     const yaHora = !!(inicial && inicial.hora != null);
-    setPaso(yaHora ? 3 : yaCancha ? 2 : 0);
+    setPaso(modoBloque ? 0 : yaHora ? 3 : yaCancha ? 2 : 0);
     setVerCal(false);
     setEditaPrecio(false);
     setD({
@@ -44,34 +48,69 @@ function NuevaReserva({ open, onClose, onGuardar, reservas, inicial }) {
     return s;
   }, [reservas, d.fecha, d.cancha]);
 
-  const precioSugerido = cancha ? cancha.precio * d.duracion : 0;
-  _nrE(() => { if (paso === 5 && !d.valor) set("valor", String(precioSugerido)); }, [paso, precioSugerido]);
+  // en modo bloque: qué canchas están libres a la hora elegida
+  const libresEnBloque = _nrM(() => {
+    if (!modoBloque) return {};
+    const m = {};
+    EB_CANCHAS.forEach((c) => {
+      const abre = d.hora >= c.desde && d.hora < c.hasta;
+      const tomada = reservas.some((r) => r.fecha === d.fecha && r.cancha === c.id && r.estado !== "Cancelada"
+                                          && r.hora <= d.hora && d.hora < r.hora + r.duracion);
+      m[c.id] = abre && !tomada;
+    });
+    return m;
+  }, [modoBloque, reservas, d.fecha, d.hora]);
 
-  const pasos = [
-    {
+  const precioSugerido = cancha ? cancha.precio * d.duracion : 0;
+
+  const pasoCancha = {
       t: "¿Qué cancha?",
       ok: !!d.cancha,
       c: (
-        <div className="q-opts">
-          {EB_CANCHAS.filter((c) => c.activa).map((c) => (
-            <button key={c.id} className={`q-opt ${d.cancha === c.id ? "on" : ""}`} onClick={() => { set("cancha", c.id); setPaso(1); }}>
-              <span className="t">{c.nombre}</span>
-              <span className="s">{c.tipo} · {fmtCOP(c.precio)} la hora</span>
-            </button>
-          ))}
+        <div>
+          {modoBloque && (
+            <div className="q-agenda-meta" style={{ marginBottom: 16 }}>
+              <span style={{ textTransform: "capitalize" }}>{ebFechaLarga(d.fecha)}</span>
+              <span>·</span>
+              <span className="mono">{ebFmtHora(d.hora)}</span>
+              <span>·</span>
+              <span><strong>{Object.values(libresEnBloque).filter(Boolean).length}</strong> libres a esa hora</span>
+            </div>
+          )}
+          <div className="q-opts">
+            {EB_CANCHAS.filter((c) => c.activa).map((c) => {
+              const libre = !modoBloque || libresEnBloque[c.id];
+              return (
+                <button key={c.id} disabled={!libre} className={`q-opt ${d.cancha === c.id ? "on" : ""}`}
+                        style={libre ? undefined : { opacity: .35, cursor: "not-allowed" }}
+                        onClick={() => {
+                          set("cancha", c.id);
+                          set("duracion", (c.duraciones || [1])[0]);
+                          setPaso((p) => p + 1);
+                        }}>
+                  <span className="t">{c.nombre}</span>
+                  <span className="s">{libre ? `${c.tipo} · ${fmtCOP(c.precio)} la hora` : `${c.tipo} · ocupada a esa hora`}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       ),
-    },
+  };
+
+  const pasosTodos = [
+    pasoCancha,
     {
+      key: "dia",
       t: verCal ? "Elige la fecha" : "¿Qué día?",
       ok: true,
       c: verCal ? (
-        <Calendario seleccionado={d.fecha} onElegir={(dif) => { set("fecha", dif); set("hora", null); setVerCal(false); setPaso(2); }} />
+        <Calendario seleccionado={d.fecha} onElegir={(dif) => { set("fecha", dif); set("hora", null); setVerCal(false); setPaso((p) => p + 1); }} />
       ) : (
         <div className="q-opts c3">
           {[{ v: 0, l: "Hoy" }, { v: 1, l: "Mañana" }].map((o) => (
             <button key={o.v} className={`q-opt ${d.fecha === o.v ? "on" : ""}`}
-                    onClick={() => { set("fecha", o.v); set("hora", null); setPaso(2); }}>
+                    onClick={() => { set("fecha", o.v); set("hora", null); setPaso((p) => p + 1); }}>
               <span className="t">{o.l}</span>
               <span className="s">{ebFechaCorta(o.v)}</span>
             </button>
@@ -86,6 +125,7 @@ function NuevaReserva({ open, onClose, onGuardar, reservas, inicial }) {
       ),
     },
     {
+      key: "hora",
       t: "¿A qué hora?",
       ok: d.hora != null,
       c: (
@@ -97,7 +137,7 @@ function NuevaReserva({ open, onClose, onGuardar, reservas, inicial }) {
           </div>
           <ListaHorarios
             cancha={cancha} reservas={reservas} dia={d.fecha} seleccion={d.hora}
-            onElegir={(h) => { set("hora", h); setPaso(3); }}
+            onElegir={(h) => { set("hora", h); setPaso((p) => p + 1); }}
           />
         </div>
       ),
@@ -106,18 +146,20 @@ function NuevaReserva({ open, onClose, onGuardar, reservas, inicial }) {
       t: "¿Cuántas horas?",
       ok: true,
       c: (
+        <div>
         <div className="q-opts c3">
           {(cancha?.duraciones || [1]).map((n) => {
             const cabe = Array.from({ length: n }).every((_, i) => !ocupadas.has(d.hora + i) && d.hora + i < (cancha?.hasta || 23));
             return (
               <button key={n} disabled={!cabe} className={`q-opt ${d.duracion === n ? "on" : ""}`}
                       style={{ opacity: cabe ? 1 : .3, cursor: cabe ? "pointer" : "not-allowed" }}
-                      onClick={() => { set("duracion", n); set("valor", String((cancha?.precio || 0) * n)); setPaso(4); }}>
+                      onClick={() => { set("duracion", n); set("valor", String((cancha?.precio || 0) * n)); setPaso((p) => p + 1); }}>
                 <span className="t">{n} {n === 1 ? "hora" : "horas"}</span>
                 <span className="s">{cabe ? `hasta las ${ebFmtHora(d.hora + n)}` : "no cabe"}</span>
               </button>
             );
           })}
+        </div>
         </div>
       ),
     },
@@ -217,8 +259,11 @@ function NuevaReserva({ open, onClose, onGuardar, reservas, inicial }) {
     },
   ];
 
+  const pasos = pasosTodos.filter((p) =>
+    modoBloque ? (p.key !== "dia" && p.key !== "hora") : !(inicial?.saltarDia && p.key === "dia"));
   const esUltimo = paso === pasos.length - 1;
   const actual = pasos[paso];
+  _nrE(() => { if (esUltimo && !d.valor) set("valor", String(precioSugerido)); }, [esUltimo, precioSugerido]);
 
   const guardar = () => {
     onGuardar({
@@ -231,13 +276,27 @@ function NuevaReserva({ open, onClose, onGuardar, reservas, inicial }) {
     onClose();
   };
 
+  // Lo ya elegido, siempre a la vista en la cabecera: día · hora · cancha
+  const contexto = (
+    <span className="q-nr-ctx">
+      <span className="on">{capitalizar(ebFechaLarga(d.fecha))}</span>
+      <i>·</i>
+      {d.hora != null
+        ? <span className="on mono">{ebFmtHora(d.hora)}{esUltimo || paso > pasos.findIndex((p) => p.t === "¿Cuántas horas?") ? ` – ${ebFmtHora(d.hora + d.duracion)}` : ""}</span>
+        : <span className="off">hora</span>}
+      <i>·</i>
+      {cancha ? <span className="on">{cancha.nombre}</span> : <span className="off">cancha</span>}
+      <span className="paso">Paso {paso + 1} de {pasos.length}</span>
+    </span>
+  );
+
   return (
     <QSheet
       open={open}
       onClose={onClose}
       onBack={verCal ? () => setVerCal(false) : (paso > 0 ? () => setPaso(paso - 1) : null)}
       titulo={actual?.t}
-      sub={`Paso ${paso + 1} de ${pasos.length}`}
+      sub={contexto}
       footer={
         verCal ? null : esUltimo ? (
           <button className="q-btn pri grow lg" disabled={!actual.ok} onClick={guardar}>
