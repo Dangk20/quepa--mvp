@@ -1,13 +1,13 @@
 // Quepa Canchas · datos sembrados
-// Negocio único: Cancha El Bosque (Neiva). Reemplaza el multi-negocio del prototipo original.
+// Negocio único: Opita Sports Neiva. Reemplaza el multi-negocio del prototipo original.
 
 const EB_NEGOCIO = {
-  id: "elbosque",
+  id: "opitasports",
   vertical: "canchas",
-  name: "Cancha El Bosque",
+  name: "Opita Sports Neiva",
   city: "Neiva",
   address: "Avenida 26 # 51-101",
-  short: "EB",
+  short: "OS",
   plan: "Quepa Canchas",
   hero: "assets-b2b/canchas.webp",
   descripcion: "Seis canchas sintéticas techadas, iluminadas y con parqueadero. Abierto todos los días.",
@@ -121,18 +121,18 @@ const EB_CIERRES = [
 ];
 
 const EB_USUARIOS = [
-  { id: "u1", nombre: "Daniel Peña",    correo: "daniel@canchaelbosque.co",  wa: "+57 318 226 4530", rol: "Administrador", activo: true },
-  { id: "u2", nombre: "Marcela Guzmán", correo: "marcela@canchaelbosque.co", wa: "+57 312 447 9981", rol: "Recepción",     activo: true },
+  { id: "u1", nombre: "Daniel Peña",    correo: "daniel@opitasports.co",  wa: "+57 318 226 4530", rol: "Administrador", activo: true },
+  { id: "u2", nombre: "Marcela Guzmán", correo: "marcela@opitasports.co", wa: "+57 312 447 9981", rol: "Recepción",     activo: true },
 ];
 
 // Perfil del negocio · mismos campos que el editor de Lugares del console
 const EB_PERFIL = {
   // 01 · identidad
-  nombre: "Cancha El Bosque",
+  nombre: "Opita Sports Neiva",
   categoria: "Cancha deportiva",
   ciudad: "Neiva",
   region: "Huila",
-  descripcion: "Cancha El Bosque, en la Avenida 26 de Neiva, es un complejo de seis canchas sintéticas techadas e iluminadas, con parqueadero propio y tienda. Ideal para el partido de la semana, torneos entre amigos y celebraciones. Abierto todos los días hasta las 11 de la noche.",
+  descripcion: "Opita Sports Neiva, en la Avenida 26, es un complejo de seis canchas sintéticas techadas e iluminadas, con parqueadero propio y tienda. Ideal para el partido de la semana, torneos entre amigos y celebraciones. Abierto todos los días hasta las 11 de la noche.",
   highlights: ["Canchas techadas", "Grama certificada FIFA", "Iluminación nocturna", "Parqueadero propio"],
   vibe: ["Competitivo", "Familiar", "Ambiente de barrio"],
   idealPara: ["Partido entre amigos", "Torneos", "Entrenamiento", "Cumpleaños deportivos"],
@@ -152,15 +152,15 @@ const EB_PERFIL = {
     coordenadas: "2.94829, -75.28190",
     telefono: "+57 318 226 4530",
     whatsapp: "+57 318 226 4530",
-    maps: "https://maps.app.goo.gl/elbosqueneiva",
+    maps: "https://maps.app.goo.gl/opitasportsneiva",
   }],
 
   // 04 · contacto y reservas
-  website: "https://canchaelbosque.co",
+  website: "https://opitasports.co",
   bookingUrl: "https://wa.me/573182264530",
   redes: [
-    { id: "r1", tipo: "Instagram", url: "https://instagram.com/canchaelbosque", handle: "@canchaelbosque", etiqueta: "", principal: true },
-    { id: "r2", tipo: "Facebook",  url: "https://facebook.com/canchaelbosque",  handle: "@canchaelbosque", etiqueta: "", principal: false },
+    { id: "r1", tipo: "Instagram", url: "https://instagram.com/opitasports", handle: "@opitasports", etiqueta: "", principal: true },
+    { id: "r2", tipo: "Facebook",  url: "https://facebook.com/opitasports",  handle: "@opitasports", etiqueta: "", principal: false },
   ],
 
   // 05 · horarios

@@ -171,7 +171,7 @@ function AppCanchas() {
   };
 
   if (!auth) {
-    return <ScreenLogin correo="hola@canchaelbosque.co" sinRegistro onLogin={() => setAuth(true)} />;
+    return <ScreenLogin correo="hola@opitasports.co" sinRegistro onLogin={() => setAuth(true)} />;
   }
 
   return (

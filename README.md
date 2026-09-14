@@ -1,7 +1,7 @@
 # Quepa Canchas
 
 Prototipo navegable del **panel del negocio** para canchas sintéticas. Front-only, sin backend, con datos
-sembrados: *Cancha El Bosque*, en Neiva.
+sembrados: *Opita Sports Neiva*.
 
 Diseñado a escala grande, para alguien que no es tecnológico y que hasta hoy anotaba las reservas en un
 cuaderno. Funciona igual con mouse y con dedo.
